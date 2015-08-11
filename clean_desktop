@@ -1,0 +1,102 @@
+#!/bin/bash
+
+YYMMDD="`date '+%F'`"
+SYSNAME="`uname -n`"
+USERNAME="`echo ${HOME} | sed 's/\/home\///'`"
+FILENAME="${YYMMDD}_${USERNAME}_${SYSNAME}_backup.tar.gz"
+
+# make sure there's a backup directory
+if ! test -d $HOME/backup; then
+  mkdir $HOME/backup
+fi
+
+# make sure there's a test backup directory
+if ! test -d $HOME/backup/desktop; then
+  mkdir $HOME/backup/desktop
+fi
+
+INCLUDE_ARRAY=($HOME/Desktop)
+INCLUDES=""
+
+EXCLUDE_ARRAY=()
+EXCLUDES=""
+
+
+for I in ${EXCLUDE_ARRAY[@]}; do
+  if test -d $HOME/$I; then
+    EXCLUDES="${EXCLUDES}--exclude=${HOME}/${I} "
+  fi
+done
+
+for I in ${INCLUDE_ARRAY[@]}; do
+  if test -d $I; then
+    INCLUDES="${INCLUDES}${I} "
+  fi
+done
+
+SIZE=0
+for I in ${INCLUDE_ARRAY[@]}; do
+    THIS_SIZE=`sudo du -s ${EXCLUDES} ${I} | sed -r 's/[A-Za-z_]+//g' | sed -r 's/[ \t]+//g' | sed -r 's/[\/]+//g'`
+    SIZE=$[ ${SIZE} + ${THIS_SIZE} ]
+done
+
+SIZE=$[ $SIZE / 1000 ]
+
+ZIP_EQ="${SIZE}*0.67"
+SIZE=`echo "scale=2; ${ZIP_EQ}" | bc`
+SIZE=`echo "${SIZE}" | sed -r 's/\.[0-9][0-9]//g'`
+
+
+#Check to see whether filename exists in ~/backup directory.
+
+REPEAT=0
+while test -f $HOME/backup/$FILENAME; do
+
+	if [ ! $LETTER ]; then
+	   LETTER="a"
+  else
+
+     DEC=`printf '%d' "'${LETTER}"`
+	   if [ $DEC -ge 97 ] && [ $DEC -lt 103 ]; then
+		    DEC=`expr ${DEC} + 1`
+			  OCTAL=`expr ${DEC} + 44`
+				LETTER=`echo -e "\0${OCTAL}"`
+		 elif [ $DEC = 103 ]; then
+		    LETTER="a"
+			  REPEAT=`expr ${REPEAT} + 1`
+		 fi
+		 
+  fi
+	
+	PRINT_LETTER="${LETTER}"
+	REPEAT_THIS="${REPEAT}"
+  while [ $REPEAT_THIS -gt 0 ]; do
+	  PRINT_LETTER="${PRINT_LETTER}${LETTER}"
+		REPEAT_THIS=`expr ${REPEAT_THIS} - 1`
+	done
+
+  FILENAME="${YYMMDD}${PRINT_LETTER}_${USERNAME}_${SYSNAME}_desktop_backup.tar.gz"
+
+done
+
+
+read -p "  Backup \"${HOME}/backup/${FILENAME}\" will be about ${SIZE} mb.  Continue? (Y/n) " CONTINUE
+
+while [ ! $CONTINUE == "yes" ] && [ ! $CONTINUE == "YES" ] && [ ! $CONTINUE == "Y" ] && [ ! $CONTINUE == "y" ] && [ ! $CONTINUE == "Yes" ]; do  
+  
+  if [ $CONTINUE == "no" ] || [ $CONTINUE == "NO" ] || [ $CONTINUE == "N" ] || [ $CONTINUE == "n" ] ||[ $CONTINUE == "NO" ]; then
+    exit
+  else
+    read -p "  Invalid response.  Continue? (Y/n) " CONTINUE
+  fi
+
+done
+
+
+#Run tar command and create backup package
+sudo tar -cvpzf $HOME/backup/desktop/$FILENAME $EXCLUDES $INCLUDES
+
+
+if ! test -f $HOME/backup/desktop/$FILENAME; then
+  echo "File successfully created"
+fi
