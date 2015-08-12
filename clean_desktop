@@ -3,7 +3,7 @@
 YYMMDD="`date '+%F'`"
 SYSNAME="`uname -n`"
 USERNAME="`echo ${HOME} | sed 's/\/home\///'`"
-FILENAME="${YYMMDD}_${USERNAME}_${SYSNAME}_backup.tar.gz"
+FILENAME="${YYMMDD}_${USERNAME}_${SYSNAME}_desktop_backup.tar.gz"
 
 # make sure there's a backup directory
 if ! test -d $HOME/backup; then
@@ -15,42 +15,17 @@ if ! test -d $HOME/backup/desktop; then
   mkdir $HOME/backup/desktop
 fi
 
-INCLUDE_ARRAY=($HOME/Desktop)
-INCLUDES=""
 
-EXCLUDE_ARRAY=()
-EXCLUDES=""
-
-
-for I in ${EXCLUDE_ARRAY[@]}; do
-  if test -d $HOME/$I; then
-    EXCLUDES="${EXCLUDES}--exclude=${HOME}/${I} "
-  fi
-done
-
-for I in ${INCLUDE_ARRAY[@]}; do
-  if test -d $I; then
-    INCLUDES="${INCLUDES}${I} "
-  fi
-done
-
-SIZE=0
-for I in ${INCLUDE_ARRAY[@]}; do
-    THIS_SIZE=`sudo du -s ${EXCLUDES} ${I} | sed -r 's/[A-Za-z_]+//g' | sed -r 's/[ \t]+//g' | sed -r 's/[\/]+//g'`
-    SIZE=$[ ${SIZE} + ${THIS_SIZE} ]
-done
-
+SIZE=`sudo du -s $HOME/Desktop | sed -r 's/[A-Za-z_]+//g' | sed -r 's/[ \t]+//g' | sed -r 's/[\/]+//g'`
 SIZE=$[ $SIZE / 1000 ]
-
 ZIP_EQ="${SIZE}*0.67"
 SIZE=`echo "scale=2; ${ZIP_EQ}" | bc`
 SIZE=`echo "${SIZE}" | sed -r 's/\.[0-9][0-9]//g'`
 
-
 #Check to see whether filename exists in ~/backup directory.
 
 REPEAT=0
-while test -f $HOME/backup/$FILENAME; do
+while test -f $HOME/backup/desktop/$FILENAME; do
 
 	if [ ! $LETTER ]; then
 	   LETTER="a"
@@ -80,7 +55,7 @@ while test -f $HOME/backup/$FILENAME; do
 done
 
 
-read -p "  Backup \"${HOME}/backup/${FILENAME}\" will be about ${SIZE} mb.  Continue? (Y/n) " CONTINUE
+read -p "  Backup \"${HOME}/backup/desktop/${FILENAME}\" will be about ${SIZE} mb.  Continue? (Y/n) " CONTINUE
 
 while [ ! $CONTINUE == "yes" ] && [ ! $CONTINUE == "YES" ] && [ ! $CONTINUE == "Y" ] && [ ! $CONTINUE == "y" ] && [ ! $CONTINUE == "Yes" ]; do  
   
@@ -94,7 +69,7 @@ done
 
 
 #Run tar command and create backup package
-sudo tar -cvpzf $HOME/backup/desktop/$FILENAME $EXCLUDES $INCLUDES
+sudo tar -cvpzf $HOME/backup/desktop/$FILENAME $HOME/Desktop
 
 
 if ! test -f $HOME/backup/desktop/$FILENAME; then
