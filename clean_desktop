@@ -82,9 +82,9 @@ done
 
 
 #Run tar command and create backup package
-#sudo tar --exclude=".*" -cvpf $HOME/backup/desktop/$FILENAME $HOME/Desktop/
+sudo tar --exclude=".*" -cvpf $HOME/backup/desktop/$FILENAME $HOME/Desktop/
 
-#if test -f $HOME/backup/desktop/$FILENAME; then
+if test -f $HOME/backup/desktop/$FILENAME; then
   if [ $FILE_COUNT -gt 0 ]; then
     echo "File #{$FILENAME} successfully created"
     echo "Removing archived files from desktop..."
@@ -96,4 +96,7 @@ done
     echo "Removing archived directories from desktop..."
     find $HOME/Desktop/* -maxdepth 0 -type d -not -name ".*" -exec echo {} \; -exec rm -rf {} \;
   fi
-# fi
+else
+  echo "error: Archive failed to create for unknown reason. Maybe check permissions on ~/backups/desktop?"
+  echo "Exiting without deleting files."
+fi
