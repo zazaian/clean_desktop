@@ -65,10 +65,14 @@ done
 
 
 #Run tar command and create backup package
-# sudo tar --exclude=".*" -cvpf $HOME/backup/desktop/$FILENAME $HOME/Desktop/
+sudo tar --exclude=".*" -cvpf $HOME/backup/desktop/$FILENAME $HOME/Desktop/
 
-# if test -f $HOME/backup/desktop/$FILENAME; then
+if test -f $HOME/backup/desktop/$FILENAME; then
   echo "File #{$FILENAME} successfully created"
-  echo "Removing archived files from desktop"
-  find $HOME/Desktop/* -maxdepth 1 -not -name ".*" -exec echo {} \;
-# fi
+  echo "Removing archived files from desktop..."
+  find $HOME/Desktop/* -maxdepth 1 -type f -not -name ".*" -exec rm {} \;
+
+  echo ""
+  echo "Removing archived directories from desktop..."
+  find $HOME/Desktop/* -maxdepth 1 -type d -not -name ".*" -exec rm -rf {} \;
+fi
