@@ -1,6 +1,5 @@
 #!/bin/bash
 echo "Clean Desktop!!"
-echo "setting variables..."
 YYMMDD="`date '+%F'`"
 SYSNAME="`uname -n`"
 USERNAME="`echo ${HOME} | sed 's/\/home\///'`"
@@ -20,16 +19,8 @@ if ! test -d $HOME/backup/desktop; then
   mkdir $HOME/backup/desktop
 fi
 
-
-echo "calculating size"
-SIZE=`sudo du -s $HOME/Desktop | sed -r 's/[A-Za-z_]+//g' | sed -r 's/[ \t]+//g' | sed -r 's/[\/]+//g'`
-SIZE=$[ $SIZE / 1000 ]
-ZIP_EQ="${SIZE}*0.67"
-SIZE=`echo "scale=2; ${ZIP_EQ}" | bc`
-SIZE=`echo "${SIZE}" | sed -r 's/\.[0-9][0-9]//g'`
-
 #Check to see whether filename exists in ~/backup directory.
-echo "check whether any existing files exist for today"
+echo "Checking whether any existing files exist for today..."
 REPEAT=0
 while test -f $HOME/backup/desktop/$FILENAME; do
 
@@ -57,27 +48,27 @@ while test -f $HOME/backup/desktop/$FILENAME; do
 	done
 
   FILENAME="${YYMMDD}${PRINT_LETTER}_${USERNAME}_${SYSNAME}_desktop_backup.tar.gz"
-
 done
 
 
-read -p "  Backup \"${HOME}/backup/desktop/${FILENAME}\" will be about ${SIZE} mb.  Continue? (Y/n) " CONTINUE
+read -p "Will archive the desktop files in \"${HOME}/backup/desktop/${FILENAME}\". Continue? (Y/n) " CONTINUE
 
 while [ ! $CONTINUE == "yes" ] && [ ! $CONTINUE == "YES" ] && [ ! $CONTINUE == "Y" ] && [ ! $CONTINUE == "y" ] && [ ! $CONTINUE == "Yes" ]; do  
   
   if [ $CONTINUE == "no" ] || [ $CONTINUE == "NO" ] || [ $CONTINUE == "N" ] || [ $CONTINUE == "n" ] ||[ $CONTINUE == "NO" ]; then
     exit
   else
-    read -p "  Invalid response.  Continue? (Y/n) " CONTINUE
+    read -p "I have no idea what you just said. Continue, or not? (Y/n) " CONTINUE
   fi
 
 done
 
 
 #Run tar command and create backup package
-sudo tar -cvpzf $HOME/backup/desktop/$FILENAME $HOME/Desktop
+# sudo tar --exclude=".*" -cvpf $HOME/backup/desktop/$FILENAME $HOME/Desktop/
 
-
-if ! test -f $HOME/backup/desktop/$FILENAME; then
-  echo "File successfully created"
-fi
+# if test -f $HOME/backup/desktop/$FILENAME; then
+  echo "File #{$FILENAME} successfully created"
+  echo "Removing archived files from desktop"
+  find $HOME/Desktop/* -maxdepth 1 -not -name ".*" -exec echo {} \;
+# fi
