@@ -1,9 +1,27 @@
 #!/bin/bash
-echo "Clean Desktop!!"
+TRADEMARK="\xe2\x84\xa2"
+echo -e "CleanDesktop${TRADEMARK}"
+
 YYMMDD="`date '+%F'`"
 SYSNAME="`uname -n`"
 USERNAME="`echo ${HOME} | sed 's/\/home\///'`"
 FILENAME="${YYMMDD}_${USERNAME}_${SYSNAME}_desktop_backup.tar.gz"
+
+
+# check to see whether there are even files to archive
+FILE_COUNT=`find $HOME/Desktop/* -maxdepth 0 -type f -not -name ".*" 2> /dev/null | wc -l`
+DIRECTORY_COUNT=`find $HOME/Desktop/* -maxdepth 0 -type d -not -name ".*" 2> /dev/null | wc -l`
+
+if [ $FILE_COUNT == 0 ] && [ $DIRECTORY_COUNT == 0 ]; then
+  echo -e "Nothing was found on the desktop! Your desktop is already CLEAN${TRADEMARK}!!"
+  echo -e "Exiting with Cleanliness${TRADEMARK}..."
+  exit
+else
+  echo "CleanDesktop found some stuff on your desktop!! Yayy!!"
+  echo "Files found: ${FILE_COUNT}."
+  echo "Directories found: ${DIRECTORY_COUNT}."
+  echo ""
+fi
 
 echo "Checking backup directory..."
 # make sure there's a backup directory
@@ -20,7 +38,6 @@ if ! test -d $HOME/backup/desktop; then
 fi
 
 #Check to see whether filename exists in ~/backup directory.
-echo "Checking whether any existing files exist for today..."
 REPEAT=0
 while test -f $HOME/backup/desktop/$FILENAME; do
 
@@ -51,21 +68,6 @@ while test -f $HOME/backup/desktop/$FILENAME; do
 done
 
 
-# check to see whether there are even files to archive
-FILE_COUNT=`find $HOME/Desktop/* -maxdepth 0 -type f -not -name ".*" | wc -l`
-DIRECTORY_COUNT=`find $HOME/Desktop/* -maxdepth 0 -type d -not -name ".*" | wc -l`
-
-echo "Files found: ${FILE_COUNT}. Directories found: ${DIRECTORY_COUNT}."
-if [ $FILE_COUNT == 0 ] && [ $DIRECTORY_COUNT == 0 ]; then
-  NOTHING_FOUND=true
-fi
-
-if [ $NOTHING_FOUND ]; then
-  echo "No files were found on the desktop."
-  echo "Exiting..."
-  exit
-fi
-
 read -p "CleanDesktop will archive ${FILE_COUNT} files and ${DIRECTORY_COUNT} directories in \"${HOME}/backup/desktop/${FILENAME}\". Continue? (Y/n) " CONTINUE
 
 while [ ! $CONTINUE == "yes" ] && [ ! $CONTINUE == "YES" ] && [ ! $CONTINUE == "Y" ] && [ ! $CONTINUE == "y" ] && [ ! $CONTINUE == "Yes" ]; do  
@@ -83,11 +85,15 @@ done
 #sudo tar --exclude=".*" -cvpf $HOME/backup/desktop/$FILENAME $HOME/Desktop/
 
 #if test -f $HOME/backup/desktop/$FILENAME; then
-  echo "File #{$FILENAME} successfully created"
-  echo "Removing archived files from desktop..."
-  find $HOME/Desktop/* -maxdepth 0 -type f -not -name ".*" -exec echo {} \; -exec rm {} \;
+  if [ $FILE_COUNT -gt 0 ]; then
+    echo "File #{$FILENAME} successfully created"
+    echo "Removing archived files from desktop..."
+    find $HOME/Desktop/* -maxdepth 0 -type f -not -name ".*" -exec echo {} \; -exec rm {} \;
+  fi
 
-  echo ""
-  echo "Removing archived directories from desktop..."
-  find $HOME/Desktop/* -maxdepth 0 -type d -not -name ".*" -exec echo {} \; -exec rm -rf {} \;
+  if [ $DIRECTORY_COUNT -gt 0 ]; then
+    echo ""
+    echo "Removing archived directories from desktop..."
+    find $HOME/Desktop/* -maxdepth 0 -type d -not -name ".*" -exec echo {} \; -exec rm -rf {} \;
+  fi
 # fi
